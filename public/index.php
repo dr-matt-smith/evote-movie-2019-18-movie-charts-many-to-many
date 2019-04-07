@@ -32,6 +32,7 @@ switch ($action){
     case 'chartList':
         $id = filter_input(INPUT_GET, 'id');
         $chartController->chartList($id);
+//        $chartController->chartListFromRepository($id);
         break;
 
     // ------ login section --------

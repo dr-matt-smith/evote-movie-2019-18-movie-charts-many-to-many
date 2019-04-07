@@ -243,3 +243,73 @@ The project has been refactored as follows:
     ```
     
     
+## Alternative approach - custom method in `ChartMovieRepsitory`
+
+Rather than having the `Chart` class methgod 
+
+We can write a custom method in `ChartMovieRepository`, which accepts a `chartId` and returns all `chartmovie` recoreds from the DB:
+
+```php
+namespace TuDublin;
+
+use Mattsmithdev\PdoCrudRepo\DatabaseTableRepository;
+use Mattsmithdev\PdoCrudRepo\DatabaseManager;
+
+class ChartMovieRepository extends DatabaseTableRepository
+{
+    public function __construct()
+    {
+        parent::__construct(__NAMESPACE__, 'ChartMovie', 'chartmovie');
+    }
+
+
+    public function getAllForChartId($id)
+    {
+        $db = new DatabaseManager();
+        $connection = $db->getDbh();
+
+        $sql = 'SELECT * FROM chartmovie WHERE chartId = :chartId';
+
+        $statement = $connection->prepare($sql);
+        $statement->bindParam(':chartId', $id, \PDO::PARAM_INT);
+        $statement->setFetchMode(\PDO::FETCH_CLASS, $this->getClassNameForDbRecords());
+        $statement->execute();
+
+        $chartMovies = $statement->fetchAll();
+
+        return $chartMovies;
+    }
+}
+```
+
+So our alternative code for `ChartController` method `chartList(<id>)` would look as follows:
+
+```php
+    public function chartListFromRepository($id)
+    {
+        $chartRepository = new ChartRepository();
+        $chart = $chartRepository->getOneById($id);
+
+        // get chart moviers from repository
+        $chartMovieRepository = new ChartMovieRepository();
+        $chartMovies = $chartMovieRepository->getAllForChartId($id);
+
+        $pageTitle = 'chart list';
+
+        require_once __DIR__ . '/../templates/chartList.php';
+    }
+```
+
+We can seamless switch between these approaches by changing which controller method is used in our Front Controller:
+
+```php
+    case 'chartList':
+        $id = filter_input(INPUT_GET, 'id');
+        
+        $chartController->chartList($id);
+
+//        $chartController->chartListFromRepository($id);
+
+        break;
+
+```

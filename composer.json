@@ -1,0 +1,13 @@
+{
+  "autoload": {
+    "psr-4": {
+      "TuDublin\\": "src"
+    }
+  },
+  "require": {
+    "mattsmithdev/pdo-crud-for-free-repositories": "^0.9"
+  },
+  "scripts": {
+    "run": "php -S localhost:8000 -t public"
+  }
+}
